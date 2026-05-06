@@ -23,6 +23,7 @@ class _PaymentPreviewScreenState extends State<PaymentPreviewScreen> {
     _latestTripFuture = _getLatestTrip();
   }
 
+  // Lấy chuyến đi mới nhất để hiển thị
   Future<Map<String, dynamic>?> _getLatestTrip() async {
     try {
       final List<dynamic> trips = await ApiService.getAllTrips();
@@ -35,20 +36,28 @@ class _PaymentPreviewScreenState extends State<PaymentPreviewScreen> {
     return null;
   }
 
-  // Hàm xử lý cộng 3 ngày
+  // Chỉ giữ lại 4 số cuối
+  String _maskCardNumber(String? cardNumber) {
+    if (cardNumber == null || cardNumber.isEmpty) return 'N/A';
+    String cleanNumber = cardNumber.replaceAll(' ', '');
+    if (cleanNumber.length < 4) return cleanNumber;
+    String lastFour = cleanNumber.substring(cleanNumber.length - 4);
+    return '**** **** **** $lastFour';
+  }
+
+  // Hàm xử lý ngày tháng
   String _formatDatePlusThree(String? dateStr) {
     if (dateStr == null || dateStr == 'N/A') return 'N/A';
     try {
       DateTime originalDate = DateFormat('d/M/yyyy').parse(dateStr);
-      // Cộng thêm 3 ngày
       DateTime newDate = originalDate.add(const Duration(days: 3));
       return DateFormat('d/M/yyyy').format(newDate);
     } catch (e) {
-      debugPrint("Lỗi parse ngày: $e");
       return dateStr;
     }
   }
 
+  // Gửi dữ liệu thanh toán lên Server
   void _handleConfirmAndPay(Map<String, dynamic>? tripData) async {
     if (tripData == null) return;
 
@@ -60,7 +69,6 @@ class _PaymentPreviewScreenState extends State<PaymentPreviewScreen> {
 
       final firstUser = users.first;
       final String userId = (firstUser['_id'] ?? firstUser['id'] ?? '').toString();
-
       final double totalAmount = double.tryParse(tripData['fee']?.toString() ?? '0') ?? 0.0;
 
       final paymentBody = {
@@ -84,6 +92,9 @@ class _PaymentPreviewScreenState extends State<PaymentPreviewScreen> {
       }
     } catch (e) {
       setState(() => _isProcessing = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Payment failed!'), backgroundColor: Colors.red)
+      );
     }
   }
 
@@ -109,11 +120,8 @@ class _PaymentPreviewScreenState extends State<PaymentPreviewScreen> {
           }
 
           final data = snapshot.data;
-
           final String destination = data?['location'] ?? 'Danang, Vietnam';
-
           final String date = _formatDatePlusThree(data?['date']);
-
           final String time = '${data?['timeFrom'] ?? '--'} - ${data?['timeTo'] ?? '--'}';
           final String guide = data?['guideName'] ?? 'Emmy';
           final String travelers = '${data?['travelers'] ?? 0}';
@@ -128,6 +136,15 @@ class _PaymentPreviewScreenState extends State<PaymentPreviewScreen> {
                   const SizedBox(height: 20),
                   const Text('Order Summary', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
                   const SizedBox(height: 24),
+
+                  // Hiển thị thông tin thẻ đã nhập từ màn hình trước[cite: 1, 2]
+                  _buildRow("Card Holder's Name", widget.cardData['cardHolderName'] ?? 'N/A'),
+                  _buildRow("Card Number", _maskCardNumber(widget.cardData['cardNumber'])),
+
+                  const SizedBox(height: 8),
+                  const Divider(),
+                  const SizedBox(height: 8),
+
                   _buildRow('Destination', destination),
                   _buildRow('Date', date),
                   _buildRow('Time', time),

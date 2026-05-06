@@ -238,7 +238,7 @@ class _CreateNewTripScreenState extends State<CreateNewTripScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionLabel('Time'),
-        Row(children: [timeInput(_fromTimeController, 'From'), const SizedBox(width: 16), timeInput(_toTimeController, 'To')]),
+        Row(children: [timeInput(_fromTimeController, 'From(less than 3 date to prepare)'), const SizedBox(width: 16), timeInput(_toTimeController, 'To')]),
       ],
     );
   }

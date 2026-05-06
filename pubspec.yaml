@@ -1,0 +1,33 @@
+name: fellow4u
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # Thư viện để kết nối API
+  http: ^1.2.1
+
+  # Thư viện để cộng ngày tháng (Dùng cho màn hình Next Trip)
+  intl: ^0.18.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/dragon.jpg
+    - assets/images/chua.jpg
+    - assets/images/my-khe.jpg
